@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <pthread.h>
 
 using namespace std;
 void error(const char* msg)
@@ -16,13 +17,24 @@ void error(const char* msg)
     exit(1);
 }
 
+void *send_time(void *socketfd)
+{
+    unsigned int rfc_time = time(0) + 2208988800U;
+    int ret = write((int)socketfd, &rfc_time, sizeof(rfc_time));
+    if(ret < 0)
+        error("ERROR while writing to socket!");
+    cout << "time sent(" << rfc_time << ") seconds since 1.1.1900" << endl;
+    close((int)socketfd);
+    pthread_exit(0);
+}
+
 int main()
 {
 
-    int socketfd, newsockfd, ret, pid;
+    int socketfd, newsockfd, ret;
+    pthread_t thread;
     socklen_t clientlen;
     struct sockaddr_in server_addr, client_addr;
-    unsigned int rfc_time;
     cout << "Starting rfc868 server!" << endl << "Time is: " << time(0) + 2208988800U << endl;
         socketfd = socket(AF_INET, SOCK_STREAM, 0);
         if(socketfd < 0)
@@ -41,22 +53,8 @@ int main()
             if(newsockfd < 0)
                 error("ERROR while accepting!");
             cout << "client connected: " << inet_ntoa(client_addr.sin_addr) << endl;
-            pid = fork();
-            if(pid < 0)
-                error("ERROR while forking process");
-            if(pid == 0) //Son process
-            {
-                close(socketfd);
-                rfc_time = time(0) + 2208988800U;
-                ret = write(newsockfd, &rfc_time, sizeof(rfc_time));
-                if(ret < 0)
-                    error("ERROR while writing to socket!");
-                cout << "Sent time(" << rfc_time << ") seconds since 1.1.1900" << endl;
-                close(newsockfd);
-                exit(0);
-            }
-            else
-                close(newsockfd);
+            ret = pthread_create(&thread, NULL, send_time, (void *)newsockfd);
+            pthread_join(thread, 0);
         }
     return 0;
 }
