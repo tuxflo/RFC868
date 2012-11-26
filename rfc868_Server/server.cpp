@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
     bool oflag = true;
     bool ipflag =false;
     bool udpflag = true;
-    int portflag = 1025;
+    int portflag = 37;
     sa_family_t ip;
 
     Server_ *server;

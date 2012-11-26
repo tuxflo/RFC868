@@ -21,6 +21,7 @@ UDP_Socket::UDP_Socket(sa_family_t IP, bool oflag, int port)
     send_time();
 }
 
+//Dummy function
 bool UDP_Socket::listen_accept()
 {
     return true;
