@@ -1,0 +1,23 @@
+#include "rfc_socket.h"
+
+RFC_Socket::RFC_Socket(bool ipv6, bool udp)
+{
+    if(udp)
+    {
+        if(ipv6)
+            socketfd = socket(AF_INET6, SOCK_DGRAM, 0);
+        else
+            socketfd = socket(AF_INET, SOCK_DGRAM, 0);
+    }
+    else
+    {
+        if(ipv6)
+        {
+            socketfd = socket(AF_INET6, SOCK_STREAM, 0);
+            server_addr.sin_family = AF_INET6;
+        }
+
+        else
+            socketfd = socket(AF_INET, SOCK_STREAM, 0);
+    }
+}

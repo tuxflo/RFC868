@@ -8,54 +8,69 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include <errno.h>
-#include <pthread.h>
+
+#include "server_.h"
+#include "tcp_socket.h"
+#include "udp_socket.h"
 
 using namespace std;
-void error(const char* msg)
+
+void show_help()
 {
-    cerr << msg << " " << "(" << strerror(errno) << ")" << endl;
-    exit(1);
+    cout << "Usage:" << endl <<
+            "-h prints this help" << endl <<
+            "-i swich between ipv4 and ipv6 (default is ipv4)" << endl <<
+            "-u use udp as protocol (default is tcp)" << endl <<
+            "-p [port] use different working port (default is 37)" << endl <<
+            "-d enable debugging output (default is off)" << endl;
+    exit(0);
 }
 
-void *send_time(void *socketfd)
+int main(int argc, char* argv[])
 {
-    unsigned int rfc_time = time(0) + 2208988800U;
-    int ret = write((int)socketfd, &rfc_time, sizeof(rfc_time));
-    if(ret < 0)
-        error("ERROR while writing to socket!");
-    cout << "time sent(" << rfc_time << ") seconds since 1.1.1900" << endl;
-    close((int)socketfd);
-    pthread_exit(0);
-}
+    int c;
+    bool oflag = true;
+    bool ipflag =false;
+    bool udpflag = true;
+    int portflag = 1025;
+    sa_family_t ip;
 
-int main()
-{
-
-    int socketfd, newsockfd, ret;
-    pthread_t thread;
-    socklen_t clientlen;
-    struct sockaddr_in server_addr, client_addr;
-    cout << "Starting rfc868 server!" << endl << "Time is: " << time(0) + 2208988800U << endl;
-        socketfd = socket(AF_INET, SOCK_STREAM, 0);
-        if(socketfd < 0)
-            error("ERROR while opening socket!");
-        server_addr.sin_family = AF_INET;
-        server_addr.sin_port = htons(37); //37 is the default port for rfc868
-        server_addr.sin_addr.s_addr = INADDR_ANY; //Address of the machine where the server is running
-        if(bind(socketfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) <  0)
-                error("ERROR while binding!");
-        listen(socketfd, 5);
-
-        while(1)    //loop because server is running infinitely
+    Server_ *server;
+    optarg = NULL;
+    while((c = getopt(argc, argv, "diup:h")) != -1)
+        switch(c)
         {
-            clientlen = sizeof(client_addr);
-            newsockfd = accept(socketfd, (struct sockaddr *) &client_addr, &clientlen);
-            if(newsockfd < 0)
-                error("ERROR while accepting!");
-            cout << "client connected: " << inet_ntoa(client_addr.sin_addr) << endl;
-            ret = pthread_create(&thread, NULL, send_time, (void *)newsockfd);
-            pthread_join(thread, 0);
+        case 'd':
+            oflag = true;
+            break;
+        case 'i':
+            ipflag = true;
+            break;
+        case 'u':
+            udpflag = true;
+            break;
+        case 'p':
+            portflag = atoi(optarg);
+            break;
+        case 'h':
+            show_help();
+            break;
+        default:
+            show_help();
         }
+
+    if(ipflag)
+        ip = AF_INET6;
+    else
+        ip = AF_INET;
+    if(udpflag)
+    {
+        server= new UDP_Socket(ip, oflag, portflag);
+    }
+    else
+    {
+        server = new TCP_Socket(ip, oflag, portflag);
+    }
+    delete server;
     return 0;
 }
-
