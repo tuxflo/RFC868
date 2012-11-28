@@ -9,7 +9,6 @@ public:
     TCP_Socket(sa_family_t ip, bool oflag, int port);
     ~TCP_Socket();
     void send_time();
-    bool listen_accept();
     void open_socket(sa_family_t IP);
 
 };

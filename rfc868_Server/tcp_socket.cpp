@@ -5,7 +5,10 @@ TCP_Socket::TCP_Socket(sa_family_t IP, bool oflag, int port)
 {
     setflags(oflag, port);
     if(oflag)
-        cout << "starting rfc868 server..." << endl;
+        cout << "starting rfc868 server..." << endl <<
+                "using protocol: TCP" << endl <<
+                "using port: " << port << endl;
+
     socketfd = socket(IP, SOCK_STREAM, 0);
     if(socketfd < 0)
     {
@@ -18,11 +21,16 @@ TCP_Socket::TCP_Socket(sa_family_t IP, bool oflag, int port)
     if(bind(socketfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0)
         error("ERROR while binding!");
     if(oflag)
-        cout << "listening on port: " << port << endl;
+        cout << "listening on port " << port << " ..." << endl;
     listen(socketfd, 5);
 }
 
-bool TCP_Socket::listen_accept()
+TCP_Socket::~TCP_Socket()
+{
+    delete this;
+}
+
+void TCP_Socket::send_time()
 {
     running = true;
     while(running)
@@ -32,23 +40,15 @@ bool TCP_Socket::listen_accept()
         if(newsockfd < 0)
         {
             error("ERROR while accepting!");
-            return false;
         }
         if(oflag)
-            cout << "client connected: " << inet_ntoa(client_addr.sin_addr) << endl;
-        send_time();
+            cout << "client connected: " << inet_ntoa(client_addr.sin_addr) << endl;        
+        rfc_time = time(0) + 2208988800U;
+        ret = write(newsockfd, &rfc_time, sizeof(rfc_time));
+        if(ret < 0)
+            error("ERROR while writing to socket!");
+        if(oflag)
+            cout << "time sent (" << rfc_time << ") seconds since 1.1.1900" << endl;
+        close(newsockfd);
     }
-    return true;
-}
-
-void TCP_Socket::send_time()
-{
-    int ret;
-    unsigned int rfc_time = time(0) + 2208988800U;
-    ret = write(newsockfd, &rfc_time, sizeof(rfc_time));
-    if(ret < 0)
-        error("ERROR while writing to socket!");
-    if(oflag)
-        cout << "time sent(" << rfc_time << ") seconds since 1.1.1900" << endl;
-    close(newsockfd);
 }

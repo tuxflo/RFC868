@@ -13,14 +13,14 @@ class Server_
 {
 public:
     Server_();
-    ~Server_();
-    virtual bool listen_accept() =0;
+    virtual ~Server_() =0;
+    virtual void send_time() =0;
 
 protected:
-    virtual void send_time() =0;
     void setflags(bool oflag, int port);
     void error(const char *msg);
-
+    int ret;
+    unsigned int rfc_time;
     int socketfd;
     int newsockfd;
     struct sockaddr_in server_addr;

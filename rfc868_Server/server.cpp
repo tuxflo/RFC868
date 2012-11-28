@@ -18,6 +18,7 @@ using namespace std;
 void show_help()
 {
     cout << "Usage:" << endl <<
+            "if executed without arguments it will use the default setting" << endl <<
             "-h prints this help" << endl <<
             "-i swich between ipv4 and ipv6 (default is ipv4)" << endl <<
             "-u use udp as protocol (default is tcp)" << endl <<
@@ -29,12 +30,13 @@ void show_help()
 int main(int argc, char* argv[])
 {
     int c;
+    //Set up the default settings
     bool oflag = true;
     bool ipflag =false;
     bool udpflag = true;
-    int portflag = 37;
-    sa_family_t ip;
+    int portflag = 1025;
 
+    sa_family_t ip;
     Server_ *server;
     optarg = NULL;
     while((c = getopt(argc, argv, "diup:h")) != -1)
@@ -71,6 +73,7 @@ int main(int argc, char* argv[])
     {
         server = new TCP_Socket(ip, oflag, portflag);
     }
+    server->send_time();
     delete server;
     return 0;
 }

@@ -4,7 +4,10 @@ UDP_Socket::UDP_Socket(sa_family_t IP, bool oflag, int port)
 {
     setflags(oflag, port);
     if(oflag)
-        cout << "starting rfc868 server..." << endl;
+        cout << "starting rfc868 server..." << endl <<
+                "using protocol: UPD" << endl <<
+                "using port: " << port << endl;
+
     socketfd = socket(IP, SOCK_DGRAM, 0);
     if(socketfd < 0)
     {
@@ -17,16 +20,15 @@ UDP_Socket::UDP_Socket(sa_family_t IP, bool oflag, int port)
     if(bind(socketfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0)
         error("ERROR while binding!");
     if(oflag)
-        cout << "waiting on port: " << port << endl;
+        cout << "waiting on port " << port << " ..." << endl;
     send_time();
 }
 
-//Dummy function
-bool UDP_Socket::listen_accept()
+UDP_Socket::~UDP_Socket()
 {
-    return true;
+    close(socketfd);
+    delete this;
 }
-
 
 void UDP_Socket::send_time()
 {
@@ -35,16 +37,18 @@ void UDP_Socket::send_time()
     while(1)
     {
 
-    //Recieve fake data to get the destination adress structure
+    //Recieve fake data ('a') to get the destination adress structure
 
     int n = recvfrom(socketfd, buf, 1, 0, (struct sockaddr *) &client_addr, &client_length);
     if(n < 0)
         error("Error while recieving!");
     if(oflag)
         cout << "client connected: " << inet_ntoa(client_addr.sin_addr) << endl;
-    unsigned int rfc_time = time(0) + 2208988800U;
-    int ret = sendto(socketfd, &rfc_time, sizeof(rfc_time), 0, (struct sockaddr *)&client_addr, client_length);
+    rfc_time = time(0) + 2208988800U;
+    ret = sendto(socketfd, &rfc_time, sizeof(rfc_time), 0, (struct sockaddr *)&client_addr, client_length);
     if(ret < 0)
         error("ERROR while sending time!");
+    if(oflag)
+        cout << "time sent (" << rfc_time << ") seconds since 1.1.1900" << endl;
     }
 }
