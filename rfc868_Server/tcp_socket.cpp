@@ -3,6 +3,10 @@
 using namespace std;
 TCP_Socket::TCP_Socket(sa_family_t IP, bool oflag, int port)
 {
+    //Set up the signal and signal handler
+
+
+
     setflags(oflag, port);
     if(oflag)
         cout << "starting rfc868 server..." << endl <<
@@ -23,24 +27,31 @@ TCP_Socket::TCP_Socket(sa_family_t IP, bool oflag, int port)
     if(oflag)
         cout << "listening on port " << port << " ..." << endl;
     listen(socketfd, 5);
+    send_time();
 }
 
 TCP_Socket::~TCP_Socket()
 {
-    delete this;
+    close(newsockfd);
+    close(socketfd);
 }
 
 void TCP_Socket::send_time()
 {
-    running = true;
     while(running)
     {
         client_length = sizeof(client_addr);
         newsockfd = accept(socketfd, (struct sockaddr*) &client_addr, &client_length);
+
+        //Check if SIGINT was send...
+        if(quit)
+            break;
+
         if(newsockfd < 0)
         {
             error("ERROR while accepting!");
         }
+
         if(oflag)
             cout << "client connected: " << inet_ntoa(client_addr.sin_addr) << endl;        
         rfc_time = time(0) + 2208988800U;

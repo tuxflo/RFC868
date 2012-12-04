@@ -1,7 +1,10 @@
 #include "udp_socket.h"
+
 using namespace std;
 UDP_Socket::UDP_Socket(sa_family_t IP, bool oflag, int port)
 {
+
+
     setflags(oflag, port);
     if(oflag)
         cout << "starting rfc868 server..." << endl <<
@@ -27,28 +30,32 @@ UDP_Socket::UDP_Socket(sa_family_t IP, bool oflag, int port)
 UDP_Socket::~UDP_Socket()
 {
     close(socketfd);
-    delete this;
 }
 
 void UDP_Socket::send_time()
 {
     client_length = sizeof(struct sockaddr_in);
-    char buf[1];
-    while(1)
+
+    while(running)
     {
+        //Recieve 0 Byte data to get the destination adress structure
+        int n = recvfrom(socketfd, 0, 0, 0, (struct sockaddr *) &client_addr, &client_length);
 
-    //Recieve fake data ('a') to get the destination adress structure
+        //Check if SIGINT was send
+        if(quit)
+            break;
 
-    int n = recvfrom(socketfd, buf, 1, 0, (struct sockaddr *) &client_addr, &client_length);
-    if(n < 0)
-        error("Error while recieving!");
-    if(oflag)
-        cout << "client connected: " << inet_ntoa(client_addr.sin_addr) << endl;
-    rfc_time = time(0) + 2208988800U;
-    ret = sendto(socketfd, &rfc_time, sizeof(rfc_time), 0, (struct sockaddr *)&client_addr, client_length);
-    if(ret < 0)
-        error("ERROR while sending time!");
-    if(oflag)
-        cout << "time sent (" << rfc_time << ") seconds since 1.1.1900" << endl;
+        if(n < 0)
+            error("Error while recieving!");
+        if(oflag)
+            cout << "client connected: " << inet_ntoa(client_addr.sin_addr) << endl;
+        rfc_time = time(0) + 2208988800U;
+        ret = sendto(socketfd, &rfc_time, sizeof(rfc_time), 0, (struct sockaddr *)&client_addr, client_length);
+        if(ret < 0)
+            error("ERROR while sending time!");
+        if(oflag)
+            cout << "time sent (" << rfc_time << ") seconds since 1.1.1900" << endl;
     }
 }
+
+

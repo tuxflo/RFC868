@@ -8,12 +8,14 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <signal.h>
 
-#include "server_.h"
+#include "server.h"
 #include "tcp_socket.h"
 #include "udp_socket.h"
 
 using namespace std;
+
 
 void show_help()
 {
@@ -33,11 +35,13 @@ int main(int argc, char* argv[])
     //Set up the default settings
     bool oflag = true;
     bool ipflag =false;
-    bool udpflag = true;
+    bool udpflag = false;
     int portflag = 1025;
 
+
+
     sa_family_t ip;
-    Server_ *server;
+    Server *server;
     optarg = NULL;
     while((c = getopt(argc, argv, "diup:h")) != -1)
         switch(c)
@@ -73,7 +77,6 @@ int main(int argc, char* argv[])
     {
         server = new TCP_Socket(ip, oflag, portflag);
     }
-    server->send_time();
     delete server;
     return 0;
 }
