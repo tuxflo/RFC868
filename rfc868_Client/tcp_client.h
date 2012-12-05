@@ -1,13 +1,13 @@
-#ifndef TCP_CLIENT_H
-#define TCP_CLIENT_H
-#include "client_.h"
+#ifndef TCP_ClientH
+#define TCP_ClientH
+#include "client.h"
 
-class tcp_client : public client_
+class tcp_client : public Client
 {
 public:
     tcp_client(sa_family_t IP, bool oflag, int port);
     ~tcp_client();
-    void recieve_time();
+    int recieve_time();
 };
 
-#endif // TCP_CLIENT_H
+#endif // TCP_ClientH

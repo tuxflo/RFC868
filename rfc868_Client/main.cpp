@@ -2,7 +2,7 @@
 
 
 
-#include "client_.h"
+#include "client.h"
 #include "tcp_client.h"
 #include "udp_client.h"
 
@@ -25,13 +25,15 @@ void show_help()
 int main(int argc, char *argv[])
 {
     int c;
+
+    //Set default options
     bool oflag = true;
     bool ipflag =false;
     bool udpflag = true;
     int portflag = 1025;
     sa_family_t ip;
 
-    client_ *client;
+    Client *client;
     optarg = NULL;
     while((c = getopt(argc, argv, "diup:h")) != -1)
         switch(c)
@@ -70,9 +72,12 @@ int main(int argc, char *argv[])
     {
         client = new tcp_client(ip, oflag, portflag);
     }
-    client->recieve_time();
-    cout << "Time recieved: " << client->get_rfc_time() << "(Seconds since 1.1.1900)" << endl;
-    cout << "Time difference between server and client: " << time(0) + 2208988800U - client->get_rfc_time() << " seconds!" << endl;
+    if(client->recieve_time() == 0)
+    {
+        cout << "Time recieved: " << client->get_rfc_time() << "(Seconds since 1.1.1900)" << endl;
+        cout << "Time difference between server and client: " << time(0) + 2208988800U - client->get_rfc_time() << " seconds!" << endl;
+    }
+    delete client;
 
     return 0;
 }

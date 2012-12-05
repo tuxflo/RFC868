@@ -18,13 +18,14 @@ tcp_client::tcp_client(sa_family_t IP, bool oflag, int port)
 
 tcp_client::~tcp_client()
 {
-    delete this;
+    close(socketfd);
+    cout << "Destructor!" << endl;
 }
 
-void tcp_client::recieve_time()
+int tcp_client::recieve_time()
 {
     ret = read(socketfd, &rfc_time, sizeof(rfc_time));
     if(ret < 0)
         error("ERROR while reading from socket!");
-
+    return 0;
 }

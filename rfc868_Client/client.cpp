@@ -1,25 +1,24 @@
-#include <iostream>
-#include <unistd.h>
-#include <string>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <string.h>
-#include <stdlib.h>
-#include <errno.h>
-
-//Client part
+#include "client.h"
 
 using namespace std;
+bool Client::quit = false;
 
-void error(const char * msg)
+Client::Client()
 {
-    cerr << msg << strerror(errno) << endl;
-    exit(1);
+    //Set up signalhandler for caching SIGINT
+    end_process.sa_handler = get_signal;
+    sigemptyset(&end_process.sa_mask);
+    end_process.sa_flags = SA_SIGINFO;
+
+    sigaction(SIGINT, &end_process, 0);
 }
 
-struct hostent* findserver(struct hostent* server, int attempt)
+Client::~Client()
+{
+
+}
+
+struct hostent* Client::findserver(struct hostent* server, int attempt)
 {
     if(attempt == 0)
     {
@@ -29,6 +28,11 @@ struct hostent* findserver(struct hostent* server, int attempt)
     string hostname;
     cout << "Please enter the Hostname or IP Adress of the Server: " << endl;
     cin >> hostname;
+    if(quit)
+    {
+        close(socketfd);
+        exit(-1);
+    }
     server = gethostbyname(hostname.c_str());
     if(server == 0)
     {
@@ -39,31 +43,24 @@ struct hostent* findserver(struct hostent* server, int attempt)
         return server;
 }
 
-int main()
+void Client::error(const char *msg)
 {
-    int socketfd, ret;
-    struct sockaddr_in server_addr;
-    struct hostent *server;
-    unsigned int rfc_time;
-
-    cout << "RFC868 Client started!" << endl;
-        socketfd = socket(AF_INET, SOCK_STREAM, 0);
-        if(socketfd < 0)
-            error("ERROR while opening socket!");
-        server = findserver(server, 5);
-        if(server == 0)
-            error("ERROR no server found!");
-        server_addr.sin_family = AF_INET;
-        server_addr.sin_port = htons(37);
-        memcpy((char *) &server_addr.sin_addr.s_addr, (char *)server->h_addr, server->h_length);
-        if(connect(socketfd,(struct sockaddr *) &server_addr, sizeof(server_addr)) < 0)
-            error("ERROR while connecting to server!");
-        ret = read(socketfd, &rfc_time, sizeof(rfc_time));
-        if(ret < 0)
-            error("ERROR while reading from socket!");
-        close(socketfd);
-
-        cout << "time recieved from server: " << rfc_time << endl;
-    return 0;
+    cerr << msg << " (" << strerror(errno) << ")" << endl;
+    exit(1);
 }
 
+unsigned int Client::get_rfc_time()
+{
+    return rfc_time;
+}
+
+void Client::setflags(bool oflag, int port)
+{
+    this->oflag = oflag;
+    this->port = port;
+}
+
+void Client::get_signal(int sig)
+{
+    quit = true;
+}
