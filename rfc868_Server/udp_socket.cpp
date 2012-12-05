@@ -55,6 +55,7 @@ void UDP_Socket::send_time()
             error("ERROR while sending time!");
         if(oflag)
             cout << "time sent (" << rfc_time << ") seconds since 1.1.1900" << endl;
+
     }
 }
 

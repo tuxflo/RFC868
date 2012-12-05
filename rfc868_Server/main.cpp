@@ -1,14 +1,6 @@
 #include <iostream>
-#include <sys/socket.h>
-#include <cstring>
-#include <string>
-#include <netdb.h>
-#include <ctime>
 #include <unistd.h>
-#include <stdlib.h>
-#include <arpa/inet.h>
 #include <errno.h>
-#include <signal.h>
 
 #include "server.h"
 #include "tcp_socket.h"
@@ -38,11 +30,10 @@ int main(int argc, char* argv[])
     bool udpflag = false;
     int portflag = 1025;
 
-
-
     sa_family_t ip;
     Server *server;
-    optarg = NULL;
+    optarg = 0;
+
     while((c = getopt(argc, argv, "diup:h")) != -1)
         switch(c)
         {
@@ -78,5 +69,6 @@ int main(int argc, char* argv[])
         server = new TCP_Socket(ip, oflag, portflag);
     }
     delete server;
+
     return 0;
 }

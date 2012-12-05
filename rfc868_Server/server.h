@@ -33,7 +33,7 @@ protected:
     bool oflag; //For showing Output messages
     int port; //If different port is selected
     bool running;
-    struct sigaction end_process, old_act;
+    struct sigaction end_process;
 };
 
 #endif // Server_H
