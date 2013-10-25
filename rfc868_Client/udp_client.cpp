@@ -15,7 +15,7 @@ udp_client::udp_client(sa_family_t IP, bool oflag, int port)
 
 udp_client::~udp_client()
 {
-    delete this;
+    //do cleamup here...
 }
 
 void udp_client::recieve_time()
